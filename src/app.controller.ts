@@ -1,13 +1,13 @@
-import { Controller, Get, UseInterceptors } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { RateLimitInterceptor } from './rate-limit/rate-limit.interceptor';
+import { RateLimit } from './rate-limiter/rate-limiter.decorator';
 
 @Controller()
-@UseInterceptors(RateLimitInterceptor)
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
+  @RateLimit(5, 60000)
   getHello(): string {
     return this.appService.getHello();
   }
