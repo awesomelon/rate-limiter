@@ -18,16 +18,20 @@ export class RateLimitGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const handler = context.getHandler();
-    const rateLimit = this.reflector.get<{ limit: number; timeWindow: number }>(
-      'rateLimit',
-      handler,
-    );
+    const rateLimit = this.reflector.get<{
+      limit: number;
+      timeWindow: number;
+      keyFunction?: (request: any) => string;
+    }>('rateLimit', handler);
 
     if (!rateLimit) {
       return true;
     }
 
-    const key = this.rateLimiterService.getKey(request);
+    const key = rateLimit.keyFunction
+      ? rateLimit.keyFunction(request)
+      : this.rateLimiterService.getKey(request);
+
     return this.rateLimiterService.isAllowed(
       key,
       rateLimit.limit,

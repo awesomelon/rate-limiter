@@ -7,7 +7,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  @RateLimit(5, 60000)
+  @RateLimit(5, 60000, (req) => req.ip)
   getHello(): string {
     return this.appService.getHello();
   }
