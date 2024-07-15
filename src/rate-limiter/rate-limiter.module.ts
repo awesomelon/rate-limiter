@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { RateLimiterService } from './rate-limiter.service';
 import { RedisRateLimiterService } from './rate-limiter.redis.service';
 import { RateLimitGuard } from './rate-limiter.guard';
+import { RATE_LIMITER_SERVICE } from './type';
 
 @Module({
   providers: [
     {
-      provide: 'RATE_LIMITER_SERVICE',
+      provide: RATE_LIMITER_SERVICE,
       useClass:
         process.env.USE_REDIS === 'true'
           ? RedisRateLimiterService
@@ -14,6 +15,6 @@ import { RateLimitGuard } from './rate-limiter.guard';
     },
     RateLimitGuard,
   ],
-  exports: ['RATE_LIMITER_SERVICE'],
+  exports: [RATE_LIMITER_SERVICE],
 })
 export class RateLimiterModule {}

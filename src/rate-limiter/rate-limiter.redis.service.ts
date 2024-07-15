@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 import { IRateLimiterService } from './type';
+import * as process from 'node:process';
 
 @Injectable()
 export class RedisRateLimiterService implements IRateLimiterService {
   private redis: Redis;
 
   constructor() {
-    this.redis = new Redis();
+    this.redis = new Redis(
+      Number(process.env.REDIS_PORT),
+      process.env.REDIS_HOST,
+    );
   }
 
   getKey(request: any): string {

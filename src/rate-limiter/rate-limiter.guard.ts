@@ -5,13 +5,17 @@ import {
   Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { IRateLimiterService } from './type';
+import {
+  IRateLimiterService,
+  META_DATA_KEY,
+  RATE_LIMITER_SERVICE,
+} from './type';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    @Inject('RATE_LIMITER_SERVICE')
+    @Inject(RATE_LIMITER_SERVICE)
     private rateLimiterService: IRateLimiterService,
   ) {}
 
@@ -22,7 +26,7 @@ export class RateLimitGuard implements CanActivate {
       limit: number;
       timeWindow: number;
       keyFunction?: (request: any) => string;
-    }>('rateLimit', handler);
+    }>(META_DATA_KEY, handler);
 
     if (!rateLimit) {
       return true;
