@@ -3,6 +3,8 @@ import {
   ExecutionContext,
   Injectable,
   Inject,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
@@ -36,10 +38,19 @@ export class RateLimitGuard implements CanActivate {
       ? rateLimit.keyFunction(request)
       : this.rateLimiterService.getKey(request);
 
-    return this.rateLimiterService.isAllowed(
+    const isAllowed = await this.rateLimiterService.isAllowed(
       key,
       rateLimit.limit,
       rateLimit.timeWindow,
     );
+
+    if (!isAllowed) {
+      throw new HttpException(
+        'Too Many Requests',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    return true;
   }
 }
