@@ -4,7 +4,7 @@
   "description": "A rate limiter for NestJS with support for Redis and in-memory storage.",
   "author": "j-ho",
   "license": "MIT",
-  "repository": "https://github.com/awesomelon/nestjs-ratelimit",
+  "repository": "https://github.com/awesomelon/simple-nestjs-rate-limiter",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
