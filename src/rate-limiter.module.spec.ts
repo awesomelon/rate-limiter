@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { RateLimiterModule } from './rate-limiter.module';
-import { TestController } from '../test.controller';
+import { TestController } from './test.controller';
 
 jest.setTimeout(15000);
 describe('RateLimiterModule (e2e)', () => {

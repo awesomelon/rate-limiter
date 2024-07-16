@@ -2,6 +2,8 @@
 
 This project provides a rate limiter implementation for NestJS, allowing easy application of rate limits on routes using a decorator. It supports both in-memory and Redis-based storage for rate limiting data, and allows users to customize the key used for rate limiting.
 
+
+
 ## Features
 
 - Easy-to-use decorator for applying rate limits on routes
@@ -12,9 +14,7 @@ This project provides a rate limiter implementation for NestJS, allowing easy ap
 
 To get started, clone the repository and install the dependencies:
 ```bash
-$ git clone https://github.com/yourusername/nestjs-rate-limiter.git
-$ cd nestjs-rate-limiter
-$ npm install
+$ npm install nestjs-rate-limiter
 ```
 
 ## Configuration

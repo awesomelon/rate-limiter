@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { RateLimit } from './rate-limiter/decorators';
+import { RateLimit } from './decorators';
 
 @Controller('test')
 export class TestController {

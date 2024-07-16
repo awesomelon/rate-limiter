@@ -1,25 +1,16 @@
 {
   "name": "simple-nestjs-rate-limiter",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A rate limiter for NestJS with support for Redis and in-memory storage.",
   "author": "j-ho",
   "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": "https://github.com/awesomelon/simple-nestjs-rate-limiter",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prepublishOnly": "npm run build"
+    "build": "tsc",
+    "prepublishOnly": "npm run prebuild & npm run build"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
