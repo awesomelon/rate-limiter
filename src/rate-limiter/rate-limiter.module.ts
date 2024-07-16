@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
-import { RateLimiterService } from './rate-limiter.service';
-import { RedisRateLimiterService } from './rate-limiter.redis.service';
-import { RateLimitGuard } from './rate-limiter.guard';
-import { RATE_LIMITER_SERVICE } from './type';
+import { RateLimiterService, RedisRateLimiterService } from './services';
+import { RateLimitGuard } from './guards';
+import { RATE_LIMITER_SERVICE } from './types';
 
 @Module({
   providers: [

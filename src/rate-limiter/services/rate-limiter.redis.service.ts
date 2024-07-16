@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
-import { IRateLimiterService } from './type';
+import { IRateLimiterService } from '../types';
 import * as process from 'node:process';
 
 @Injectable()

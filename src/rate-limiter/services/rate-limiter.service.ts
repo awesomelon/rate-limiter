@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IRateLimiterService } from './type';
+import { IRateLimiterService } from '../types';
 
 @Injectable()
 export class RateLimiterService implements IRateLimiterService {

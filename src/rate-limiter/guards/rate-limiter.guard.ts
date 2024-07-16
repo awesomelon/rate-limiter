@@ -11,7 +11,7 @@ import {
   IRateLimiterService,
   META_DATA_KEY,
   RATE_LIMITER_SERVICE,
-} from './type';
+} from '../types';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
