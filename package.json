@@ -1,6 +1,6 @@
 {
   "name": "simple-nestjs-rate-limiter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A rate limiter for NestJS with support for Redis and in-memory storage.",
   "author": "j-ho",
   "license": "MIT",
