@@ -14,7 +14,7 @@ This project provides a rate limiter implementation for NestJS, allowing easy ap
 
 To get started, clone the repository and install the dependencies:
 ```bash
-$ npm install nestjs-rate-limiter
+$ npm install simply-nestjs-rate-limiter
 ```
 
 ## Configuration
@@ -183,6 +183,12 @@ export class RateLimiterModule {}
 To start the project, run the following command:
 ```bash
 $ npm run start
+```
+
+## Testing
+
+```bash
+$ npm run test
 ```
 
 ## Contributing
