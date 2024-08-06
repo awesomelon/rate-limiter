@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { IRateLimiterService } from '../types';
+import { ICacheService } from '../cache/cache-service.interface';
+import { Request } from 'express';
 
 @Injectable()
 export class RateLimiterService implements IRateLimiterService {
-  private store: Map<string, number[]> = new Map();
+  constructor(@Inject('CACHE_SERVICE') private cacheService: ICacheService) {}
 
-  getKey(request: any): string {
+  getKey(request: Request): string {
     return request.ip;
   }
 
@@ -14,22 +16,16 @@ export class RateLimiterService implements IRateLimiterService {
     limit: number,
     timeWindow: number,
   ): Promise<boolean> {
-    const now = Date.now();
-    if (!this.store.has(key)) {
-      this.store.set(key, []);
+    const currentCount = await this.cacheService.get(key);
+
+    if (currentCount === null) {
+      await this.cacheService.set(key, '1', timeWindow);
+      return true;
     }
 
-    const timestamps = this.store.get(key);
-    const validTimestamps = timestamps.filter(
-      (timestamp) => now - timestamp < timeWindow,
-    );
+    const count = parseInt(currentCount, 10) + 1;
+    await this.cacheService.set(key, count.toString(), timeWindow);
 
-    if (validTimestamps.length >= limit) {
-      return false;
-    }
-
-    validTimestamps.push(now);
-    this.store.set(key, validTimestamps);
-    return true;
+    return count <= limit;
   }
 }

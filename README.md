@@ -1,38 +1,53 @@
 # NestJS Rate Limiter
 
-This project provides a rate limiter implementation for NestJS, allowing easy application of rate limits on routes using a decorator. It supports both in-memory and Redis-based storage for rate limiting data, and allows users to customize the key used for rate limiting.
-
-
+This project provides a flexible and extensible rate limiter implementation for NestJS, allowing easy application of rate limits on routes using a decorator. It supports multiple storage backends and allows users to customize the key used for rate limiting.
 
 ## Features
 
 - Easy-to-use decorator for applying rate limits on routes
-- ports multiple storage backends (Redis, in-memory)
-- ows custom key generation functions for rate limiting
+- Supports multiple storage backends (Redis, in-memory, and easily extendable to others)
+- Allows custom key generation functions for rate limiting
+- Configurable through environment variables
+- Thoroughly tested with unit and E2E tests
 
 ## Installation
 
-To get started, clone the repository and install the dependencies:
+To get started, install the package using npm:
+
 ```bash
-$ npm install simply-nestjs-rate-limiter
+npm install nestjs-flexible-rate-limiter
 ```
 
 ## Configuration
-Set up environment variables to choose the storage backend. By default, it uses in-memory storage. To use Redis, set the USE_REDIS environment variable to true.
+
+Set up environment variables to choose the storage backend. By default, it uses in-memory storage. To use Redis, set the following environment variables:
+
 ```dotenv
-USE_REDIS=true
+CACHE_TYPE=redis
 REDIS_HOST=localhost
 REDIS_PORT=6379
 ```
 
 ## Usage
 
-1.	**Rate Limit Decorator**
+1. Import the `RateLimiterModule` in your `app.module.ts`:
 
-The RateLimit decorator applies rate limiting to routes. It accepts limit, timeWindow, and an optional keyFunction.
+```typescript
+import { Module } from '@nestjs/common';
+import { RateLimiterModule } from 'nestjs-flexible-rate-limiter';
+
+@Module({
+  imports: [RateLimiterModule],
+  // ...
+})
+export class AppModule {}
+```
+
+2. Use the `@RateLimit` decorator on your controller methods:
+
 ```typescript
 import { Controller, Get } from '@nestjs/common';
-import { RateLimit } from './rate-limiter.decorator';
+import { RateLimit } from 'nestjs-flexible-rate-limiter';
 
 @Controller('test')
 export class TestController {
@@ -50,153 +65,60 @@ export class TestController {
 }
 ```
 
-2.	**Rate Limit Guard**
+## Extending the Rate Limiter
 
-The RateLimitGuard handles the logic for enforcing rate limits using the specified storage backend and key.
+### Adding a New Cache Service
+
+To add a new cache service:
+
+1. Implement the `ICacheService` interface:
+
 ```typescript
-import { CanActivate, ExecutionContext, Injectable, Inject } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { IRateLimiterService } from './rate-limiter.interface';
+import { ICacheService } from 'nestjs-flexible-rate-limiter';
 
-@Injectable()
-export class RateLimitGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    @Inject('RATE_LIMITER_SERVICE') private rateLimiterService: IRateLimiterService,
-  ) {}
+export class NewCacheService implements ICacheService {
+  async get(key: string): Promise<string | null> {
+    // Implementation
+  }
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const handler = context.getHandler();
-    const rateLimit = this.reflector.get<{
-      limit: number;
-      timeWindow: number;
-      keyFunction?: (request: any) => string;
-    }>('rateLimit', handler);
+  async set(key: string, value: string, ttl: number): Promise<void> {
+    // Implementation
+  }
 
-    if (!rateLimit) {
-      return true;
-    }
-
-    const key = rateLimit.keyFunction ? rateLimit.keyFunction(request) : this.rateLimiterService.getKey(request);
-    return this.rateLimiterService.isAllowed(key, rateLimit.limit, rateLimit.timeWindow);
+  async increment(key: string): Promise<number> {
+    // Implementation
   }
 }
 ```
 
-3. **Rate Limiter Services**
+2. Add the new service to the `CacheServiceFactory`:
 
-Two rate limiter services are provided: an in-memory service and a Redis-based service. Both services implement the IRateLimiterService interface.
-
-- **In-Memory Service**
 ```typescript
-import { Injectable } from '@nestjs/common';
-import { IRateLimiterService } from './rate-limiter.interface';
+import { CacheServiceFactory } from 'nestjs-flexible-rate-limiter';
 
-@Injectable()
-export class RateLimiterService implements IRateLimiterService {
-  private store: Map<string, number[]> = new Map();
-
-  getKey(request: any): string {
-    return request.ip;
+CacheServiceFactory.prototype.create = function(type: string): ICacheService {
+  switch (type) {
+    case 'new-cache':
+      return new NewCacheService();
+    // ... other cases
   }
-
-  async isAllowed(key: string, limit: number, timeWindow: number): Promise<boolean> {
-    const now = Date.now();
-    if (!this.store.has(key)) {
-      this.store.set(key, []);
-    }
-
-    const timestamps = this.store.get(key);
-    const validTimestamps = timestamps.filter(timestamp => now - timestamp < timeWindow);
-
-    if (validTimestamps.length >= limit) {
-      return false;
-    }
-
-    validTimestamps.push(now);
-    this.store.set(key, validTimestamps);
-    return true;
-  }
-}
-```
-
-- **Redis Service**
-```typescript
-import { Injectable } from '@nestjs/common';
-import Redis from 'ioredis';
-import { IRateLimiterService } from './rate-limiter.interface';
-
-@Injectable()
-export class RedisRateLimiterService implements IRateLimiterService {
-  private redis: Redis;
-
-  constructor() {
-    this.redis = new Redis(); // Configure Redis connection as needed
-  }
-
-  getKey(request: any): string {
-    return request.ip;
-  }
-
-  async isAllowed(key: string, limit: number, timeWindow: number): Promise<boolean> {
-    const now = Date.now();
-    const windowStart = now - timeWindow;
-
-    await this.redis.zremrangebyscore(key, 0, windowStart);
-    const count = await this.redis.zcard(key);
-
-    if (count >= limit) {
-      return false;
-    }
-
-    await this.redis.zadd(key, now, now.toString());
-    return true;
-  }
-}
-```
-
-4. Module Setup
-```typescript
-import { Module } from '@nestjs/common';
-import { RateLimiterService } from './rate-limiter.service';
-import { RedisRateLimiterService } from './redis-rate-limiter.service';
-import { RateLimitGuard } from './rate-limit.guard';
-import { IRateLimiterService } from './rate-limiter.interface';
-
-@Module({
-  providers: [
-    {
-      provide: 'RATE_LIMITER_SERVICE',
-      useClass: process.env.USE_REDIS === 'true' ? RedisRateLimiterService : RateLimiterService,
-    },
-    RateLimitGuard,
-  ],
-  exports: ['RATE_LIMITER_SERVICE'],
-})
-export class RateLimiterModule {}
-```
-
-
-## Running the Project
-
-To start the project, run the following command:
-```bash
-$ npm run start
+};
 ```
 
 ## Testing
 
+To run the tests, use the following command:
+
 ```bash
-$ npm run test
+npm run test
 ```
+
+This will run both unit tests and E2E tests, ensuring the rate limiter functions correctly across different scenarios.
 
 ## Contributing
 
-Contributions are welcome! Please submit a pull request or open an issue to discuss any changes.
+Contributions are welcome! Please submit a pull request or open an issue to discuss any changes or improvements.
 
 ## License
 
 This project is licensed under the MIT License.
-
-This README provides a comprehensive guide to setting up and using the rate limiter in a NestJS project. It includes installation steps, usage examples, and details on configuring the module and services.
