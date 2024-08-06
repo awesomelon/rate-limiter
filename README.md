@@ -1,4 +1,4 @@
-# NestJS Rate Limiter
+# Nestjs-rate-limiter
 
 This project provides a flexible and extensible rate limiter implementation for NestJS, allowing easy application of rate limits on routes using a decorator. It supports multiple storage backends and allows users to customize the key used for rate limiting.
 
@@ -15,7 +15,7 @@ This project provides a flexible and extensible rate limiter implementation for 
 To get started, install the package using npm:
 
 ```bash
-npm install nestjs-flexible-rate-limiter
+npm install @j-ho/nestjs-rate-limiter
 ```
 
 ## Configuration
@@ -34,7 +34,7 @@ REDIS_PORT=6379
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { RateLimiterModule } from 'nestjs-flexible-rate-limiter';
+import { RateLimiterModule } from '@j-ho/nestjs-rate-limiter';
 
 @Module({
   imports: [RateLimiterModule],
@@ -47,11 +47,11 @@ export class AppModule {}
 
 ```typescript
 import { Controller, Get } from '@nestjs/common';
-import { RateLimit } from 'nestjs-flexible-rate-limiter';
+import { RateLimit } from '@j-ho/nestjs-rate-limiter';
 
-@Controller('test')
+@Controller()
 export class TestController {
-  @Get()
+  @Get('test')
   @RateLimit(5, 60000) // 5 requests per minute, default key (IP)
   getTest() {
     return 'This is a rate-limited endpoint';
@@ -74,7 +74,7 @@ To add a new cache service:
 1. Implement the `ICacheService` interface:
 
 ```typescript
-import { ICacheService } from 'nestjs-flexible-rate-limiter';
+import { ICacheService } from '@j-ho/nestjs-rate-limiter';
 
 export class NewCacheService implements ICacheService {
   async get(key: string): Promise<string | null> {
@@ -85,7 +85,7 @@ export class NewCacheService implements ICacheService {
     // Implementation
   }
 
-  async increment(key: string): Promise<number> {
+  async clear(): Promise<void> {
     // Implementation
   }
 }
@@ -94,7 +94,7 @@ export class NewCacheService implements ICacheService {
 2. Add the new service to the `CacheServiceFactory`:
 
 ```typescript
-import { CacheServiceFactory } from 'nestjs-flexible-rate-limiter';
+import { CacheServiceFactory } from '@j-ho/nestjs-rate-limiter';
 
 CacheServiceFactory.prototype.create = function(type: string): ICacheService {
   switch (type) {
