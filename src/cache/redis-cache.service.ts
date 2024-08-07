@@ -1,16 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ICacheService } from './cache-service.interface';
+import { ICacheOptions, ICacheService } from './cache-service.interface';
 import Redis from 'ioredis';
 
 @Injectable()
 export class RedisCacheService implements ICacheService {
   private redis: Redis;
 
-  constructor() {
-    this.redis = new Redis(
-      Number(process.env.REDIS_PORT),
-      process.env.REDIS_HOST,
-    );
+  constructor(options: ICacheOptions) {
+    this.redis = new Redis(options);
   }
 
   async get(key: string): Promise<string | null> {
