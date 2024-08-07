@@ -12,7 +12,9 @@ export class CacheServiceFactory {
       case 'redis':
         return new RedisCacheService(options);
       default:
-        throw new Error(`Unsupported cache type: ${type}`);
+        throw new Error(
+          `Unsupported cache type: ${type}. Supported types are: memory, redis`,
+        );
     }
   }
 }

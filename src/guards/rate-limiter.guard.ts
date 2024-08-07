@@ -12,6 +12,7 @@ import {
   META_DATA_KEY,
   RATE_LIMITER_SERVICE,
 } from '../types';
+import { Request } from 'express';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
@@ -22,12 +23,12 @@ export class RateLimitGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
     const handler = context.getHandler();
     const rateLimit = this.reflector.get<{
       limit: number;
       timeWindow: number;
-      keyFunction?: (request: any) => string;
+      keyFunction?: (request: Request) => string;
     }>(META_DATA_KEY, handler);
 
     if (!rateLimit) {

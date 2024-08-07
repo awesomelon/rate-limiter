@@ -22,7 +22,7 @@ export class RateLimiterModule {
           useFactory: (cacheServiceFactory: CacheServiceFactory) => {
             return cacheServiceFactory.create(
               options.cacheType || 'memory',
-              options.cacheOptions,
+              options.cacheOptions || {},
             );
           },
           inject: [CacheServiceFactory],
